@@ -1,0 +1,46 @@
+server:
+  port: 8060
+spring:
+  cloud:
+    gateway:
+      globalcors:
+        cors-configurations:
+          '[/**]':
+            # 允许携带认证信息
+            # 允许跨域的源(网站域名/ip)，设置*为全部
+            # 允许跨域请求里的head字段，设置*为全部
+            # 允许跨域的method， 默认为GET和OPTIONS，设置*为全部
+            # 跨域允许的有效期
+            allow-credentials: true
+            allowed-origins: "*"
+            allowed-headers: "*"
+            allowed-methods: "*"
+            max-age: 3600
+      routes:
+        - id: item-service
+          uri: lb://item-service
+          predicates:
+            - Path=/**
+          filters:
+            # 1：去除一个路径，2：去除2路径，以此类推
+            - StripPrefix=2
+        - id: upload-service
+            uri: lb://upload-service
+            predicates:
+              - Path=/**
+            filters:
+              # 1：去除一个路径，2：去除2路径，以此类推
+              - StripPrefix=2
+ribbon:
+  ConnectTimeout: 250 # 连接超时时间(ms)
+  ReadTimeout: 2000 # 通信超时时间(ms)
+  OkToRetryOnAllOperations: true # 是否对所有操作重试
+  MaxAutoRetriesNextServer: 2 # 同一服务不同实例的重试次数
+  MaxAutoRetries: 1 # 同一实例的重试次数
+hystrix:
+  command:
+    default:
+      execution:
+        isolation:
+          thread:
+            timeoutInMillisecond: 60000 # 熔断超时时长：6000ms
